@@ -32,7 +32,7 @@ builder.Services.AddHttpClient(
     client =>
     {
         client.BaseAddress =
-            new Uri("http://localhost:5187/");
+            new Uri("http://gestionordinateurs-api:5187/");
     }
 );
 
