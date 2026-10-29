@@ -1,0 +1,123 @@
+@page "/reparations"
+@attribute [Authorize]
+
+@inject IHttpClientFactory Factory
+
+
+<PageTitle>Réparations</PageTitle>
+
+
+<h1>Historique des réparations</h1>
+
+
+@if (reparations == null)
+{
+    <p>
+        <em>Chargement...</em>
+    </p>
+}
+else
+{
+    <table class="table">
+
+        <thead>
+            <tr>
+                <th>Ordinateur</th>
+                <th>Technicien</th>
+                <th>Type réparation</th>
+                <th>Date intervention</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            @foreach (
+                var reparation in reparations)
+            {
+                <tr>
+
+                    <td>
+                        @reparation.NomOrdinateur
+                    </td>
+
+                    <td>
+                        @reparation.Technicien
+                    </td>
+
+                    <td>
+                        @reparation.TypeReparation
+                    </td>
+
+                    <td>
+                        @reparation.DateIntervention
+                            .ToString(
+                                "dd/MM/yyyy HH:mm"
+                            )
+                    </td>
+
+                </tr>
+            }
+
+        </tbody>
+
+    </table>
+}
+
+
+@code
+{
+    private List<HistoriqueReparationDto>?
+        reparations;
+
+
+    protected override async Task
+        OnInitializedAsync()
+    {
+        var client =
+            Factory.CreateClient(
+                "GestionOrdinateursApi"
+            );
+
+
+        reparations =
+            await client
+                .GetFromJsonAsync<
+                    List<HistoriqueReparationDto>>(
+                    "Reparations/historique"
+                );
+    }
+
+
+    public class HistoriqueReparationDto
+    {
+        public int OrdinateurId
+        {
+            get;
+            set;
+        }
+
+        public string NomOrdinateur
+        {
+            get;
+            set;
+        } = "";
+
+        public string Technicien
+        {
+            get;
+            set;
+        } = "";
+
+        public string TypeReparation
+        {
+            get;
+            set;
+        } = "";
+
+        public DateTime DateIntervention
+        {
+            get;
+            set;
+        }
+    }
+}

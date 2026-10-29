@@ -1,0 +1,93 @@
+@page "/login"
+
+@inject Blazored.SessionStorage.ISessionStorageService SessionStorage
+@inject NavigationManager Navigation
+@inject JwtAuthenticationStateProvider AuthProvider
+@inject IHttpClientFactory HttpClientFactory
+
+
+<h3>Connexion</h3>
+
+
+<label>Utilisateur</label>
+
+<input
+    @bind="LoginUtilisateur"
+    class="form-control" />
+
+
+<button
+    class="btn btn-primary mt-2"
+    @onclick="Connexion">
+
+    Connecter
+
+</button>
+
+
+@if (!string.IsNullOrEmpty(Message))
+{
+    <p class="mt-2">
+        @Message
+    </p>
+}
+
+
+@code
+{
+    private string LoginUtilisateur = "";
+
+    private string Message = "";
+
+
+    private async Task Connexion()
+    {
+        Message = "";
+
+
+        var client =
+            HttpClientFactory
+                .CreateClient(
+                    "AuthentificationApi"
+                );
+
+
+        var response =
+            await client.PostAsync(
+                $"auth/login?login={LoginUtilisateur}",
+                null
+            );
+
+
+        if (!response.IsSuccessStatusCode)
+        {
+            Message = "Il n'existe pas";
+
+            return;
+        }
+
+
+        string token =
+            await response.Content
+                .ReadAsStringAsync();
+
+
+        token = token.Trim('"');
+
+
+        await SessionStorage
+            .SetItemAsync(
+                "jwtToken",
+                token
+            );
+
+
+        AuthProvider
+            .NotifyUserAuthentication(
+                token
+            );
+
+
+        Navigation.NavigateTo("/");
+    }
+}
